@@ -1,0 +1,72 @@
+import tweepy
+import json
+
+consumer_key = 'qSkNhPz2u5jN4KVPlqM1lKbrs' 
+consumer_secret = '5KwXaIDBdPSvnXH1ToIluSXOmqqa2V5VGwTS6UAKn9Ge3Raj9U' 
+access_token = '962283185697673216-Lrgp2PVWWNSgMmzxnzb64aR7IZ571nZ' 
+access_token_secret = '0INN1YbHMaJfmzbHGjavGOqyxS3cr1UzDk4fw3XV0yeqv'
+
+
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+
+api = tweepy.API(auth)
+
+public_tweets = api.home_timeline()
+tweetlist = list(public_tweets)
+'''
+public_tweets will be a list that come from
+timeline, so who I follow. This needs be changed
+if one wants to target people/these are people I like
+= not bots. So not helpful but still data.
+
+'''
+
+# print(tweetlist[0])
+print("length is: ", len(tweetlist))
+# print(tweetlist[0])
+
+print("Now parsing")
+print("Now JSON format...")
+print("Now JSON format...")
+print("Now JSON format...")
+
+listlist = []
+
+for i in range(0, 1):
+	item = str(tweetlist[i])
+	# json_try = json.load(item)
+	json_file = json.dumps(item)
+	print("THIS IS A:", type(json_file))
+	print(json_file)
+	print("trying really")
+	print(json_file[0])
+
+'''
+for i in range(0, 1):
+	name = json_file['name']
+	print(name)
+	'''
+
+# for tweet in tweetlist:
+#     print(tweet.text)
+
+print("")
+print(type(tweetlist))
+# print(tweetlist[0])
+
+
+try:
+	jsonfile = json.dumps(tweetlist)
+
+
+except TypeError:
+	print("Error")
+
+
+file = open('tweet.json', 'wb') 
+print("Writing tweet objects to JSON please wait...")
+toJSON = public_tweets
+file.write(toJSON)
+# having trouble wrting to a file
