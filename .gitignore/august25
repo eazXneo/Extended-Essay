@@ -1,0 +1,60 @@
+import tweepy
+from tweepy import OAuthHandler
+import json
+ 
+consumer_key = 'qSkNhPz2u5jN4KVPlqM1lKbrs' 
+consumer_secret = '5KwXaIDBdPSvnXH1ToIluSXOmqqa2V5VGwTS6UAKn9Ge3Raj9U' 
+access_token = '962283185697673216-Lrgp2PVWWNSgMmzxnzb64aR7IZ571nZ' 
+access_secret = '0INN1YbHMaJfmzbHGjavGOqyxS3cr1UzDk4fw3XV0yeqv'
+ 
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_secret)
+ 
+api = tweepy.API(auth)
+
+for status in tweepy.Cursor(api.home_timeline).items(10):
+    # Process a single status
+    print(status.text)
+
+for status in tweepy.Cursor(api.home_timeline).items(10):
+    # Process a single status
+    something = status._json
+    print(type(something))
+    with open("twitter.json", 'w') as outfile:
+        json.dump(something, outfile)
+
+#######################################################################
+### OHMYGOODNESS IT WORKS!!!
+#######################################################################
+
+for friend in tweepy.Cursor(api.friends).items():
+    tryagain = friend._json
+    print(tryagain)
+    print(type(tryagain))
+    print(tryagain['location'])
+
+## WRITING TO FILE NOW WORKS!!! BUT
+# the twitter stuff doens't want to go there... :(
+'''
+tweepy = "this data was downloaded from twitter!!!"
+
+with open("twitter.txt", 'w') as outfile:
+    json.dump(tweepy, outfile)
+'''
+
+# this doesn't through an error but doesn't 
+# seem to work either.
+'''
+def process_or_store(tweet):
+    print(json.dumps(tweet))
+    print("json.dumps worked!")
+
+process_or_store(api.friends)
+'''
+    
+'''
+# this doesn't work
+file = open('tweet.json', 'wb') 
+print("Writing tweet objects to JSON please wait...")
+file.write(something)
+'''
