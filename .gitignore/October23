@@ -1,0 +1,199 @@
+# importing libraries
+import tweepy
+from tweepy import OAuthHandler
+import json
+import face_recognition
+import requests
+ 
+# authentication 
+consumer_key = 'qSkNhPz2u5jN4KVPlqM1lKbrs' 
+consumer_secret = '5KwXaIDBdPSvnXH1ToIluSXOmqqa2V5VGwTS6UAKn9Ge3Raj9U' 
+access_token = '962283185697673216-Lrgp2PVWWNSgMmzxnzb64aR7IZ571nZ' 
+access_secret = '0INN1YbHMaJfmzbHGjavGOqyxS3cr1UzDk4fw3XV0yeqv'
+ 
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_secret)
+
+# API setup 
+api = tweepy.API(auth)
+
+### create dataset for this program (50 acoounts) from hashtag
+'''
+still to be done!!!
+either manually or with fancy coding
+'''
+### but fancy coding will also output the results in a nicer fashion
+
+#######################################################################
+### OHMYGOODNESS IT WORKS!!!
+#######################################################################
+
+### need to understand the weighting.
+'''
+at the moment a basic tally will be used
+'''
+# for calculating the chance of bot
+bot_counter = 0
+# so that program stops running if verified.
+testing = True
+
+twitter_id = 813286
+user_id = 813286
+twitter_handle = "BarackObama"
+# test on Obama
+user_info = api.get_user(twitter_id, user_id, twitter_handle)._json
+print(user_info)
+### so there needs to be a way of extracting the id thing before it is inputed here.
+
+while testing:
+    #-- check if verified
+    verification_status = user_info['verified']
+    print("\nVerifification status: ", verification_status)
+    print(type(verification_status))
+    if verification_status == True:
+        print("\nDefinitely not a bot")
+        # uncomment this!
+        # break
+    else:
+        continue
+
+    #-- bot creation date
+    date_joined = user_info['created_at']
+    print("\nCreation date:", date_joined)
+    print(type(date_joined))
+    ### needs to process this info
+    '''
+    if bot created in ... timeframe --> bot
+    '''
+
+    # might be a problem here
+
+    #-- tweet & retweet frequency (average activity?)
+    total_tweets = user_info['statuses_count']
+    print("\nTweets & retweets total:", total_tweets)
+    print(type(total_tweets))
+    ### calculate length user / total tweets.
+    '''
+    turn the string of date joined into some int. 
+    manage the time issues. 
+    and calculate
+    '''
+
+    #-- more followers to following ratio
+    followers = user_info['followers_count']
+    print("\nFollowers:", followers)
+    print(type(followers))
+    following = user_info['friends_count']
+    print("Following:", following)
+    print(type(following))
+    if following > followers:
+        bot_counter = bot_counter + 1
+        print("Suspicious element detected.")
+        print("Bot likelihood:", bot_counter)
+    else:
+        print("Bot likelihood:", bot_counter)
+
+    #-- bio
+    bio = user_info['description']
+    print("\nBio:", bio)
+    print(type(bio))
+    if bio == "":
+        bot_counter = bot_counter + 1
+        print("Suspicious element detected.")
+        print("Bot likelihood:", bot_counter)
+    else:
+        print("Bot likelihood:", bot_counter)
+
+    # name analysis (matching with screen_name)
+    name = user_info['name']
+    print("\nName:", name)
+    print(type(name))
+    for i in range(0, len(name)-1):
+        first_name = name
+        if name[i] == " ":
+            space_index = name[i]
+            first_name = name[0:i]
+            print("first_name:", first_name)
+            surname = name[i+1:]
+            print("surname:", surname)
+    if first_name in name:
+        print(first_name, "in both twitter handle and given name.")
+    else:
+        print("Handle and given name do not match")
+    # this is very primitive. Needs more work to be a proper criterion for bot 
+    # behaviour
+
+    #-- check following people
+    followers_of_user = api.followers(twitter_id, twitter_handle, user_id)
+    length_follower_list = len(followers_of_user)
+    print("\nFollowers being analysed...")
+    lol = followers_of_user[0]
+    print("Type of element", type(lol))
+    follower_list = []
+    for i in range(0,length_follower_list):
+        current_follower = followers_of_user[i]._json
+        follower_screen_name = current_follower['screen_name']
+        follower_list.append(follower_screen_name)
+    print(type(followers_of_user))
+    print(length_follower_list)
+    print(length_follower_list, "followers:", follower_list)
+    # good job!
+    # within those accounts check for words 'parody'
+    # or 'fan account' in description
+    threshhold = len(follower_list) / 2
+    suspicious_count = 0
+    letter_count = 0
+    suspicious_list = []
+    for i in range(0, len(follower_list)):
+        current_element = follower_list[i]
+        for j in range(0, len(current_element)):
+            letter = current_element[j]
+            if type(letter) == int:
+                letter_count = letter_count + 1
+            else:
+                continue
+        if letter_count >= 4:
+            suspicious_list.append(current_element)
+            print("Account found with", letter_count, "letters in its screen name.")
+        else:
+            continue
+    if len(suspicious_list) >= threshhold:
+        print(twitter_handle, "has", len(suspicious_list), "suspicious accounts")
+        print("This is more than half of a random sample of follwers.")
+        print("This makes the accounts a possible bot in a bot network.")
+
+    # evaluate that this might be a bad heuristic
+
+    #-- face recognition for profile image
+    url = user_info['profile_image_url_https']
+    print("\nUser profile image found. URL:", url)
+    print(type(url))
+    ### needs to be bigger and higher resolution
+    to_cut = url[-10:]
+    print(to_cut)
+    to_add = '400x400.jpg'
+    print(to_add)
+    url_copy = url[:len(url)-10]
+    print(url_copy)
+    final_url = url_copy + to_add
+    print(final_url)
+    ### download img from twitter
+    r = requests.get(final_url, allow_redirects=True)
+    open('profileImageTry.png', 'wb').write(r.content)
+    profile_image = 'profileImageTry.png'
+    ### then paste & run through face_recognition!!!
+    image = face_recognition.load_image_file(profile_image)
+    face_locations = face_recognition.face_locations(image)
+    print(type(face_locations))
+    print(face_locations)
+    if face_locations == []:
+        print("no faces found")
+    else:
+        print("FACE!!!")
+
+    ### YAAAAAAAAS!!!
+
+    testing = False
+
+# program ends
+### make functions for this stuff because multiple accounts but for now gucci
